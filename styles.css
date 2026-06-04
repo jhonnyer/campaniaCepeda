@@ -197,7 +197,6 @@ button#generateBtn {
   min-width: 170px;
 }
 
-button#shareBtn,
 button#downloadBtn {
   background: #eef3ff;
   color: #003d7a;
