@@ -27,6 +27,11 @@ let campaignLogo = new Image();
 campaignLogo.src = 'img/cepeda.jpg';
 campaignLogo.onload = () => { try { generatePoster(); } catch (e) {} };
 
+// fallback photo when no upload exists
+let fallbackPhoto = new Image();
+fallbackPhoto.src = 'img/cepeda_fondo.jpg';
+fallbackPhoto.onload = () => { try { generatePoster(); } catch (e) {} };
+
 const defaultMessages = [
   'Creo en una Colombia donde la paz, la justicia social y las oportunidades lleguen a todos los territorios. Por eso apoyo a Iván Cepeda.',
   'Sueño con una Colombia donde nuestras diferencias no nos dividan y donde todos tengamos oportunidades para construir un mejor futuro. Por eso apoyo a Iván Cepeda.',
@@ -96,7 +101,7 @@ function drawBackground() {
   ctx.strokeRect(12, 12, 1056, 1056);
 }
 
-function drawTemplate(showPhotoCard) {
+function drawTemplate() {
   const topCardX = 60;
   const topCardY = 40;
   const topCardW = 960; // wider candidate card to show faces more
@@ -148,22 +153,20 @@ function drawTemplate(showPhotoCard) {
     }
   }
 
-  if (showPhotoCard) {
-    // bottom left photo card
-    ctx.save();
-    ctx.fillStyle = 'rgba(255, 255, 255, 0.94)';
-    ctx.shadowColor = 'rgba(15, 23, 42, 0.16)';
-    ctx.shadowBlur = 28;
-    ctx.shadowOffsetY = 9;
-    ctx.roundRect(leftCardX, bottomY, leftCardW, leftCardH, 32);
-    ctx.fill();
-    ctx.restore();
+  // bottom left photo card
+  ctx.save();
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.94)';
+  ctx.shadowColor = 'rgba(15, 23, 42, 0.16)';
+  ctx.shadowBlur = 28;
+  ctx.shadowOffsetY = 9;
+  ctx.roundRect(leftCardX, bottomY, leftCardW, leftCardH, 32);
+  ctx.fill();
+  ctx.restore();
 
-    // remove left bottom card border
-    ctx.strokeStyle = 'rgba(0,0,0,0)';
-    ctx.lineWidth = 0;
-    // ctx.roundRect(leftCardX, bottomY, leftCardW, leftCardH, 32); ctx.stroke();
-  }
+  // remove left bottom card border
+  ctx.strokeStyle = 'rgba(0,0,0,0)';
+  ctx.lineWidth = 0;
+  // ctx.roundRect(leftCardX, bottomY, leftCardW, leftCardH, 32); ctx.stroke();
 
   // bottom right text card
   ctx.save();
@@ -310,7 +313,9 @@ function drawImageCrop(img) {
   const w = 480 - pad * 2;
   const h = 480 - pad * 2;
 
-  if (!img) {
+  const imageToDraw = img || (fallbackPhoto.complete ? fallbackPhoto : null);
+  if (!imageToDraw) {
+    drawPlaceholderImage(x, y, w, h);
     return;
   }
   // draw framed photo with shadow and cover-fit crop for a more attractive look
@@ -326,17 +331,17 @@ function drawImageCrop(img) {
   ctx.restore();
 
   // compute cover crop (scale image so it fills area)
-  const scale = Math.max(w / img.width, h / img.height);
+  const scale = Math.max(w / imageToDraw.width, h / imageToDraw.height);
   const sw = Math.round(w / scale);
   const sh = Math.round(h / scale);
-  const sx = Math.round((img.width - sw) / 2);
-  const sy = Math.round((img.height - sh) / 2);
+  const sx = Math.round((imageToDraw.width - sw) / 2);
+  const sy = Math.round((imageToDraw.height - sh) / 2);
 
   ctx.save();
   ctx.beginPath();
   ctx.roundRect(x, y, w, h, 28);
   ctx.clip();
-  ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
+  ctx.drawImage(imageToDraw, sx, sy, sw, sh, x, y, w, h);
   ctx.restore();
 
   // inner border
@@ -507,7 +512,7 @@ function generatePoster() {
   const bodyMessage = getMessageText(message, cause);
 
   drawBackground();
-  drawTemplate(!!uploadedImage);
+  drawTemplate();
   drawDecorations();
   drawImageCrop(uploadedImage);
   drawText(header, bodyMessage);
@@ -515,7 +520,7 @@ function generatePoster() {
   if (uploadedImage) {
     setStatus('Imagen generada. Puedes descargarla o compartirla.', false);
   } else {
-    setStatus('Vista previa (sin foto). Sube una foto para incluirla en la imagen final.', false);
+    setStatus('Imagen generada con imagen por defecto. Sube tu foto para personalizarla.', false);
   }
 }
 
