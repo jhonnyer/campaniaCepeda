@@ -98,7 +98,7 @@ function drawTemplate() {
   const headerX = 24;
   const headerY = 24;
   const headerW = 1032;
-  const headerH = 300; // increased height
+  const headerH = 420; // más espacio para el header
   ctx.fillRect(headerX, headerY, headerW, headerH);
 
   // draw campaign image as full-width header cover (if available)
@@ -118,10 +118,10 @@ function drawTemplate() {
       // fallback: keep colored header
     }
   }
-  ctx.font = '500 30px Inter, sans-serif';
-  ctx.fillStyle = '#ffffff';
-  // header title vertically centered
-  ctx.fillText('Iván Cepeda - Presidencia', 60, headerY + Math.round(headerH / 2) + 6);
+
+  // overlay so the cover stays legible
+  ctx.fillStyle = 'rgba(0, 0, 0, 0.16)';
+  ctx.fillRect(headerX, headerY, headerW, headerH);
 
   // left and right panels (same size)
   const panelX = 60;
@@ -136,9 +136,10 @@ function drawTemplate() {
   ctx.strokeRect(panelX, panelY, panelW, panelH);
 
   // right text panel slightly tinted for better contrast
-  ctx.fillStyle = '#fbfdff';
+  ctx.fillStyle = '#eef4ff';
   ctx.fillRect(panelX + panelW + 16, panelY, panelW, panelH);
-  ctx.strokeStyle = '#d8e2f5';
+  ctx.strokeStyle = '#d1dbea';
+  ctx.lineWidth = 1.8;
   ctx.strokeRect(panelX + panelW + 16, panelY, panelW, panelH);
 
   // no 'Mensaje de apoyo' text as requested
@@ -148,7 +149,7 @@ function drawImageCrop(img) {
   // image area sits inside the left panel with consistent padding
   const panelX = 60;
   const headerY = 24;
-  const headerH = 300;
+  const headerH = 420;
   const panelY = headerY + headerH + 12;
   const pad = 16;
   const x = panelX + pad;
@@ -256,21 +257,23 @@ function wrapText(text, maxWidth, lineHeight, startX, startY) {
   if (line) {
     ctx.fillText(line, startX, y);
   }
+
+  return y + lineHeight;
 }
 
 // Draw justified text: distribute extra space between words for each full line
-function drawJustifiedText(text, maxWidth, lineHeight, startX, startY) {
+function drawJustifiedText(text, maxWidth, lineHeight, startX, startY, maxHeight) {
   const words = text.split(' ');
   let line = [];
   let y = startY;
+  const limitY = maxHeight ? startY + maxHeight : Infinity;
 
   for (let i = 0; i < words.length; i += 1) {
     const word = words[i];
     const testLine = line.length ? line.join(' ') + ' ' + word : word;
     const { width: testWidth } = ctx.measureText(testLine);
     if (testWidth > maxWidth && line.length) {
-      // justify current line
-      const lineText = line.join(' ');
+      if (y > limitY) break;
       const wordsInLine = line;
       const wordsWidth = wordsInLine.reduce((sum, w) => sum + ctx.measureText(w).width, 0);
       const spaceCount = wordsInLine.length - 1;
@@ -287,10 +290,12 @@ function drawJustifiedText(text, maxWidth, lineHeight, startX, startY) {
     }
   }
 
-  // draw last line left-aligned
-  if (line.length) {
+  if (line.length && y <= limitY) {
     ctx.fillText(line.join(' '), startX, y);
+    y += lineHeight;
   }
+
+  return y;
 }
 
 function drawText(header, message) {
@@ -298,33 +303,35 @@ function drawText(header, message) {
   const panelW = 440;
   const panelH = 560;
   const headerY = 24;
-  const headerH = 300;
+  const headerH = 420;
   const panelY = headerY + headerH + 12;
   const textX = panelX + panelW + 36; // right panel inner start
   const textWidth = panelW - 56;
-  const startY = panelY + 40;
+  const startY = panelY + 48;
 
   ctx.fillStyle = '#003d7a';
   ctx.font = '700 32px Inter, sans-serif';
   ctx.textAlign = 'left';
-  wrapText(header, textWidth, 42, textX, startY);
+  const headerEndY = wrapText(header, textWidth, 42, textX, startY);
 
   ctx.fillStyle = '#1d2b4b';
   ctx.font = '500 26px Inter, sans-serif';
-  // draw justified message text
-  drawJustifiedText(message, textWidth, 38, textX, startY + 90);
+  const bodyY = headerEndY + 18;
+  const voiceY = panelY + panelH - 90;
+  const availableBodyHeight = voiceY - bodyY - 8;
+  drawJustifiedText(message, textWidth, 38, textX, bodyY, availableBodyHeight);
 
   ctx.fillStyle = '#003d7a';
   ctx.font = '600 24px Inter, sans-serif';
-  const voiceY = panelY + panelH - 60;
   ctx.fillText('Mi voz cuenta', textX, voiceY);
 
-  // fixed hashtags at the bottom center (two lines) — moved up
+  // fixed hashtags at the bottom of the right panel
+  const hashtagX = panelX + panelW + 16 + panelW / 2;
   ctx.textAlign = 'center';
   ctx.fillStyle = '#f7b600';
   ctx.font = '700 22px Inter, sans-serif';
-  ctx.fillText('#MeLaJuegoPorLaVida', 540, 860);
-  ctx.fillText('#IvanCepedaPresidente', 540, 888);
+  ctx.fillText('#MeLaJuegoPorLaVida', hashtagX, panelY + panelH - 44);
+  ctx.fillText('#IvanCepedaPresidente', hashtagX, panelY + panelH - 18);
   ctx.textAlign = 'left';
 }
 
