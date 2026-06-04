@@ -3,52 +3,52 @@
     {
       "value": "",
       "label": "Ninguna",
-      "message": "Por la vida, la justicia social y la defensa de los territorios"
+      "message":"Por la vida, la justicia social y la defensa de los territorios"
     },
     {
       "value": "Paz",
       "label": "Paz",
-      "message": "La paz se construye con justicia social, diálogo y oportunidades"
+      "message":"Porque la paz se construye con justicia social, diálogo y oportunidades"
     },
     {
       "value": "Educación",
       "label": "Educación",
-      "message": "El conocimiento es la mejor herramienta para cambiar el país"
+      "message":"Porque el conocimiento es la mejor herramienta para cambiar el país"
     },
     {
       "value": "Salud",
       "label": "Salud",
-      "message": "La salud es un derecho, no un privilegio."
+      "message":"Porque la salud es un derecho, no un privilegio."
     },
     {
       "value": "Juventud",
       "label": "Juventud",
-      "message": "Más educación, más cultura y más oportunidades para la juventud"
+      "message":"Porque la juventud merece más educación, más cultura y más oportunidades"
     },
     {
       "value": "Campo",
       "label": "Campo",
-      "message": "Porque quienes alimentan al país merecen vivir con dignidad"
+      "message":"Porque quienes alimentan al país merecen vivir con dignidad"
     },
     {
       "value": "Empleo",
       "label": "Empleo",
-      "message": "El empleo digno fortalece la paz y el bienestar social"
+      "message":"Porque el empleo digno fortalece la paz y el bienestar social"
     },
     {
       "value": "Derechos Humanos",
       "label": "Derechos Humanos",
-      "message": "La defensa de la vida y la dignidad es el camino hacia la paz"
+      "message":"Porque la defensa de la vida y la dignidad es el camino hacia la paz"
     },
     {
       "value": "Justicia Social",
       "label": "Justicia Social",
-      "message": "La dignidad y las oportunidades deben llegar a todas las personas"
+      "message":"Porque la dignidad y las oportunidades deben llegar a todas las personas"
     },
     {
       "value": "Medio Ambiente",
       "label": "Medio Ambiente",
-      "message": "Cuidar la naturaleza es proteger la vida y el futuro para todos"
+      "message":"Porque cuidar la naturaleza es proteger la vida y el futuro para todos"
     }
   ]
 }

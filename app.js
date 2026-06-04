@@ -535,11 +535,10 @@ function drawJustifiedText(text, maxWidth, lineHeight, startX, startY, maxHeight
   return y;
 }
 
-function drawStyledWrappedText(segments, maxWidth, lineHeight, startX, startY, maxHeight) {
+function drawStyledWrappedText(segments, maxWidth, lineHeight, startX, startY, maxHeight, align = 'left') {
   const words = [];
   segments.forEach((segment) => {
-    const trimmedText = segment.text.trim();
-    const parts = trimmedText.match(/(\S+\s*)/g) || [];
+    const parts = segment.text.match(/(\S+\s*|\s+)/g) || [];
     parts.forEach((word) => {
       words.push({ text: word, color: segment.color, font: segment.font });
     });
@@ -555,9 +554,12 @@ function drawStyledWrappedText(segments, maxWidth, lineHeight, startX, startY, m
       return sum + ctx.measureText(item.text).width;
     }, 0);
     const gaps = lineWords.length - 1;
-    const extraSpace = !isLast && gaps > 0 ? (maxWidth - totalWidth) / gaps : 0;
+    const extraSpace = align !== 'center' && !isLast && gaps > 0 ? (maxWidth - totalWidth) / gaps : 0;
     let x = startX;
-    lineWords.forEach((item, index) => {
+    if (align === 'center') {
+      x += (maxWidth - totalWidth) / 2;
+    }
+    lineWords.forEach((item) => {
       ctx.font = item.font;
       ctx.fillStyle = item.color;
       ctx.fillText(item.text, x, y);
@@ -602,8 +604,10 @@ function drawText(header, message) {
   const blueColor = '#1d4ed8';
   const darkColor = '#0f172a';
   const headerFont = '800 30px Inter, sans-serif';
-  const bodyFont = '500 26px Inter, sans-serif';
+  const bodyFont = 'italic 26px Inter, sans-serif';
   const headerLineHeight = 38;
+  const headerAlign = 'center';
+  const headerX = panelX + panelW / 2;
 
   let headerEndY;
   if (fullHeader.toLowerCase().startsWith('me llamo')) {
@@ -613,20 +617,19 @@ function drawText(header, message) {
     const nameSection = fullHeader.substring(startPhrase.length, fullHeader.indexOf(endPhrase));
     const deMatch = nameSection.match(/^(.+?) de (.+)$/i);
     const namePart = deMatch ? deMatch[1] : nameSection;
-    const deSection = deMatch ? ` de ${deMatch[2]}` : '';
 
     const segments = [
       { text: startPhrase, color: darkColor, font: headerFont },
       { text: `${namePart} `, color: blueColor, font: headerFont }
     ];
-    if (deSection) {
+    if (deMatch) {
       segments.push({ text: `de ${deMatch[2]} `, color: darkColor, font: headerFont });
     }
     segments.push({ text: 'y quiero que ', color: darkColor, font: headerFont });
     segments.push({ text: presidentPhrase, color: blueColor, font: headerFont });
     segments.push({ text: ' sea mi Presidente.', color: darkColor, font: headerFont });
 
-    headerEndY = drawStyledWrappedText(segments, textWidth, headerLineHeight, textX, startY, panelH - 160);
+    headerEndY = drawStyledWrappedText(segments, textWidth, headerLineHeight, headerX - textWidth / 2, startY, panelH - 160, headerAlign);
   } else {
     const presidentPhrase = 'Iván Cepeda';
     const beforePresident = 'Quiero que ';
@@ -640,17 +643,20 @@ function drawText(header, message) {
       ],
       textWidth,
       headerLineHeight,
-      textX,
+      headerX - textWidth / 2,
       startY,
-      panelH - 160
+      panelH - 160,
+      headerAlign
     );
   }
 
   const bodyY = headerEndY + 18;
+  const bodyText = message.trim();
+  const quotedBody = bodyText.startsWith('“') && bodyText.endsWith('”') ? bodyText : `“${bodyText}”`;
   ctx.font = bodyFont;
   ctx.fillStyle = '#24346f';
   const availableBodyHeight = panelY + panelH - 96 - bodyY - 8;
-  drawJustifiedText(message, textWidth, 34, textX, bodyY, availableBodyHeight);
+  drawJustifiedText(quotedBody, textWidth, 34, textX, bodyY, availableBodyHeight);
 
   // fixed hashtags at the bottom of the right panel (larger)
   const hashtagX = panelX + panelW / 2;
