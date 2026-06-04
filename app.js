@@ -96,7 +96,7 @@ function drawBackground() {
   ctx.strokeRect(12, 12, 1056, 1056);
 }
 
-function drawTemplate() {
+function drawTemplate(showPhotoCard) {
   const topCardX = 60;
   const topCardY = 40;
   const topCardW = 960; // wider candidate card to show faces more
@@ -148,20 +148,22 @@ function drawTemplate() {
     }
   }
 
-  // bottom left photo card
-  ctx.save();
-  ctx.fillStyle = 'rgba(255, 255, 255, 0.94)';
-  ctx.shadowColor = 'rgba(15, 23, 42, 0.16)';
-  ctx.shadowBlur = 28;
-  ctx.shadowOffsetY = 9;
-  ctx.roundRect(leftCardX, bottomY, leftCardW, leftCardH, 32);
-  ctx.fill();
-  ctx.restore();
+  if (showPhotoCard) {
+    // bottom left photo card
+    ctx.save();
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.94)';
+    ctx.shadowColor = 'rgba(15, 23, 42, 0.16)';
+    ctx.shadowBlur = 28;
+    ctx.shadowOffsetY = 9;
+    ctx.roundRect(leftCardX, bottomY, leftCardW, leftCardH, 32);
+    ctx.fill();
+    ctx.restore();
 
-  // remove left bottom card border
-  ctx.strokeStyle = 'rgba(0,0,0,0)';
-  ctx.lineWidth = 0;
-  // ctx.roundRect(leftCardX, bottomY, leftCardW, leftCardH, 32); ctx.stroke();
+    // remove left bottom card border
+    ctx.strokeStyle = 'rgba(0,0,0,0)';
+    ctx.lineWidth = 0;
+    // ctx.roundRect(leftCardX, bottomY, leftCardW, leftCardH, 32); ctx.stroke();
+  }
 
   // bottom right text card
   ctx.save();
@@ -262,7 +264,9 @@ function drawDecorations() {
     { x: leftCardX - 18, y: leftCardY + 100 },
     { x: leftCardX + 80, y: leftCardY + leftCardH + 14 },
     { x: leftCardX + leftCardW + 18, y: leftCardY + 220 },
-    { x: leftCardX + leftCardW + 10, y: leftCardY + leftCardH - 80 }
+    { x: leftCardX + leftCardW + 10, y: leftCardY + leftCardH - 80 },
+    { x: leftCardX + leftCardW + 48, y: leftCardY + leftCardH + 28 },
+    { x: leftCardX + leftCardW + 32, y: leftCardY + 28 }
   ];
   photoPositions.forEach((pos) => {
     const outer = 6 + Math.random() * 6;
@@ -270,6 +274,29 @@ function drawDecorations() {
     const spikes = 5;
     const color = starColors[Math.floor(Math.random() * starColors.length)];
     drawStar(pos.x, pos.y, spikes, outer, inner, color, Math.random() * Math.PI);
+  });
+
+  // add hearts and stars around the right bottom text card
+  const rightCardX = 560;
+  const rightCardY = 580;
+  const rightCardW = 480;
+  const rightCardH = 480;
+  const bottomDecor = [
+    { x: rightCardX + rightCardW + 18, y: rightCardY + 60, type: 'star' },
+    { x: rightCardX + rightCardW + 20, y: rightCardY + 180, type: 'heart' },
+    { x: rightCardX + rightCardW + 40, y: rightCardY + 320, type: 'star' },
+    { x: rightCardX + 70, y: rightCardY + rightCardH + 18, type: 'star' },
+    { x: rightCardX + rightCardW - 90, y: rightCardY + rightCardH + 28, type: 'heart' }
+  ];
+  bottomDecor.forEach((item) => {
+    if (item.type === 'heart') {
+      drawHeart(item.x, item.y, 24, '#ef4444');
+    } else {
+      const outer = 8 + Math.random() * 6;
+      const inner = outer * 0.5;
+      const color = starColors[Math.floor(Math.random() * starColors.length)];
+      drawStar(item.x, item.y, 5, outer, inner, color, Math.random() * Math.PI);
+    }
   });
 }
 
@@ -284,7 +311,6 @@ function drawImageCrop(img) {
   const h = 480 - pad * 2;
 
   if (!img) {
-    drawPlaceholderImage(x, y, w, h);
     return;
   }
   // draw framed photo with shadow and cover-fit crop for a more attractive look
@@ -481,7 +507,7 @@ function generatePoster() {
   const bodyMessage = getMessageText(message, cause);
 
   drawBackground();
-  drawTemplate();
+  drawTemplate(!!uploadedImage);
   drawDecorations();
   drawImageCrop(uploadedImage);
   drawText(header, bodyMessage);
