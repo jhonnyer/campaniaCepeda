@@ -915,7 +915,57 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/service-worker.js').catch(() => {
       console.warn('No se pudo registrar el service worker.');
     });
+
+    // listen for messages from the service worker to notify about updates
+    try {
+      navigator.serviceWorker.addEventListener('message', (evt) => {
+        if (evt.data && evt.data.type === 'SW_UPDATED') {
+          showUpdateBanner();
+        }
+      });
+    } catch (e) {}
   });
+}
+
+function showUpdateBanner() {
+  if (document.getElementById('swUpdateBanner')) return;
+  const banner = document.createElement('div');
+  banner.id = 'swUpdateBanner';
+  banner.style = 'position:fixed;left:50%;transform:translateX(-50%);bottom:18px;background:#fff;border:1px solid #dbeafe;padding:10px 14px;border-radius:12px;box-shadow:0 8px 24px rgba(2,30,70,0.12);z-index:10000;display:flex;align-items:center;gap:12px;';
+
+  const label = document.createElement('span');
+  label.textContent = 'Nueva versión disponible';
+  label.style = 'color:#0f1724;font-weight:600';
+  banner.appendChild(label);
+
+  const btn = document.createElement('button');
+  btn.textContent = 'Recargar';
+  btn.style = 'background:#003d7a;color:#fff;border-radius:8px;padding:8px 12px;border:none;font-weight:700;cursor:pointer;';
+  btn.addEventListener('click', async () => {
+    try {
+      const reg = await navigator.serviceWorker.getRegistration();
+      if (reg && reg.waiting) {
+        // ask waiting SW to skipWaiting, then reload when activated
+        reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+        reg.waiting.addEventListener('statechange', (e) => {
+          if (e.target.state === 'activated') window.location.reload();
+        });
+      } else {
+        window.location.reload();
+      }
+    } catch (e) {
+      window.location.reload();
+    }
+  });
+  banner.appendChild(btn);
+
+  const close = document.createElement('button');
+  close.textContent = 'Cerrar';
+  close.style = 'background:transparent;color:#374151;border:none;cursor:pointer;margin-left:8px;padding:6px 8px;border-radius:6px;';
+  close.addEventListener('click', () => banner.remove());
+  banner.appendChild(close);
+
+  document.body.appendChild(banner);
 }
 
 loadCauseDefinitions().then(() => {
