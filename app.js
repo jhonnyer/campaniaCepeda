@@ -538,10 +538,10 @@ function drawJustifiedText(text, maxWidth, lineHeight, startX, startY, maxHeight
 function drawStyledWrappedText(segments, maxWidth, lineHeight, startX, startY, maxHeight) {
   const words = [];
   segments.forEach((segment) => {
-    const parts = segment.text.split(' ');
-    parts.forEach((word, index) => {
-      const text = `${word}${index < parts.length - 1 ? ' ' : ''}`;
-      words.push({ text, color: segment.color, font: segment.font });
+    const trimmedText = segment.text.trim();
+    const parts = trimmedText.match(/(\S+\s*)/g) || [];
+    parts.forEach((word) => {
+      words.push({ text: word, color: segment.color, font: segment.font });
     });
   });
 
@@ -617,12 +617,12 @@ function drawText(header, message) {
 
     const segments = [
       { text: startPhrase, color: darkColor, font: headerFont },
-      { text: namePart, color: blueColor, font: headerFont }
+      { text: `${namePart} `, color: blueColor, font: headerFont }
     ];
     if (deSection) {
-      segments.push({ text: deSection, color: darkColor, font: headerFont });
+      segments.push({ text: `de ${deMatch[2]} `, color: darkColor, font: headerFont });
     }
-    segments.push({ text: ' y quiero que ', color: darkColor, font: headerFont });
+    segments.push({ text: 'y quiero que ', color: darkColor, font: headerFont });
     segments.push({ text: presidentPhrase, color: blueColor, font: headerFont });
     segments.push({ text: ' sea mi Presidente.', color: darkColor, font: headerFont });
 
