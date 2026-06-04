@@ -100,7 +100,7 @@ function drawTemplate() {
   const topCardX = 60;
   const topCardY = 40;
   const topCardW = 960; // wider candidate card to show faces more
-  const topCardH = 480; // taller so faces are visible
+  const topCardH = 520; // taller so faces are more visible
   const bottomY = topCardY + topCardH + 20;
   const leftCardX = 60;
   const leftCardW = 480; // make bottom cards the same width
@@ -181,10 +181,102 @@ function drawTemplate() {
   // no 'Mensaje de apoyo' text as requested
 }
 
+// draw decorative heart and stars around the top candidate card
+function drawDecorations() {
+  const topCardX = 60;
+  const topCardY = 40;
+  const topCardW = 960;
+  const topCardH = 480;
+
+  // helper: draw a star at x,y
+  function drawStar(cx, cy, spikes, outerRadius, innerRadius, color, rotation = 0) {
+    let rot = Math.PI / 2 * 3 + rotation;
+    let x = cx;
+    let y = cy;
+    const step = Math.PI / spikes;
+    ctx.beginPath();
+    ctx.moveTo(cx, cy - outerRadius);
+    for (let i = 0; i < spikes; i += 1) {
+      x = cx + Math.cos(rot) * outerRadius;
+      y = cy + Math.sin(rot) * outerRadius;
+      ctx.lineTo(x, y);
+      rot += step;
+      x = cx + Math.cos(rot) * innerRadius;
+      y = cy + Math.sin(rot) * innerRadius;
+      ctx.lineTo(x, y);
+      rot += step;
+    }
+    ctx.lineTo(cx, cy - outerRadius);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+  }
+
+  // helper: draw a heart centered at x,y
+  function drawHeart(cx, cy, size, color) {
+    ctx.save();
+    ctx.beginPath();
+    const topCurveHeight = size * 0.3;
+    ctx.moveTo(cx, cy + topCurveHeight);
+    ctx.bezierCurveTo(cx, cy, cx - size / 2, cy, cx - size / 2, cy + topCurveHeight);
+    ctx.bezierCurveTo(cx - size / 2, cy + (size + topCurveHeight) / 2, cx, cy + (size + topCurveHeight) / 1.1, cx, cy + size);
+    ctx.bezierCurveTo(cx, cy + (size + topCurveHeight) / 1.1, cx + size / 2, cy + (size + topCurveHeight) / 2, cx + size / 2, cy + topCurveHeight);
+    ctx.bezierCurveTo(cx + size / 2, cy, cx, cy, cx, cy + topCurveHeight);
+    ctx.closePath();
+    ctx.fillStyle = color;
+    ctx.fill();
+    ctx.restore();
+  }
+
+  // place one heart near top-right corner of the card
+  const heartX = topCardX + topCardW - 66;
+  const heartY = topCardY + 58;
+  drawHeart(heartX, heartY, 38, '#ef4444'); // red heart
+
+  // scatter stars around the edges of the top card, outside the frame
+  const starColors = ['#f59e0b', '#1d4ed8', '#06b6d4', '#fff176'];
+  const starPositions = [
+    { x: topCardX - 24, y: topCardY + 40 },
+    { x: topCardX - 18, y: topCardY + 160 },
+    { x: topCardX + topCardW + 18, y: topCardY + 80 },
+    { x: topCardX + topCardW + 24, y: topCardY + 220 },
+    { x: topCardX + 140, y: topCardY - 24 },
+    { x: topCardX + 360, y: topCardY - 28 },
+    { x: topCardX + topCardW - 180, y: topCardY - 24 },
+    { x: topCardX + topCardW + 24, y: topCardY + topCardH - 60 }
+  ];
+  starPositions.forEach((pos) => {
+    const outer = 9 + Math.random() * 8;
+    const inner = outer * 0.5;
+    const spikes = 5;
+    const color = starColors[Math.floor(Math.random() * starColors.length)];
+    drawStar(pos.x, pos.y, spikes, outer, inner, color, Math.random() * Math.PI);
+  });
+
+  // add small stars around the user photo card outer edges
+  const leftCardX = 60;
+  const leftCardY = 580;
+  const leftCardW = 480;
+  const leftCardH = 480;
+  const photoPositions = [
+    { x: leftCardX - 18, y: leftCardY + 100 },
+    { x: leftCardX + 80, y: leftCardY + leftCardH + 14 },
+    { x: leftCardX + leftCardW + 18, y: leftCardY + 220 },
+    { x: leftCardX + leftCardW + 10, y: leftCardY + leftCardH - 80 }
+  ];
+  photoPositions.forEach((pos) => {
+    const outer = 6 + Math.random() * 6;
+    const inner = outer * 0.5;
+    const spikes = 5;
+    const color = starColors[Math.floor(Math.random() * starColors.length)];
+    drawStar(pos.x, pos.y, spikes, outer, inner, color, Math.random() * Math.PI);
+  });
+}
+
 function drawImageCrop(img) {
   // image area sits inside the left bottom card with consistent padding
   const panelX = 60;
-  const panelY = 540; // aligned with bottomY from template
+  const panelY = 580; // aligned with bottomY from template
   const pad = 20;
   const x = panelX + pad;
   const y = panelY + pad;
@@ -336,7 +428,7 @@ function drawText(header, message) {
   const panelX = 560; // right card X (left 60 + leftCardW 480 + 20 gap)
   const panelW = 480;
   const panelH = 480;
-  const panelY = 540;
+  const panelY = 580;
   const textX = panelX + 36; // right panel inner start
   const textWidth = panelW - 56;
   const startY = panelY + 44;
@@ -390,6 +482,7 @@ function generatePoster() {
 
   drawBackground();
   drawTemplate();
+  drawDecorations();
   drawImageCrop(uploadedImage);
   drawText(header, bodyMessage);
 
