@@ -203,6 +203,25 @@ button#downloadBtn {
   color: #003d7a;
 }
 
+.counters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.counters span {
+  flex: 1 1 auto;
+  min-width: 180px;
+  background: #eff6ff;
+  color: #0f1724;
+  border: 1px solid #dbeafe;
+  border-radius: 16px;
+  padding: 12px 14px;
+  font-size: 0.95rem;
+  text-align: center;
+}
+
 button.secondary {
   background: #eef3ff;
 }

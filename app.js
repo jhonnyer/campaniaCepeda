@@ -9,6 +9,8 @@ const causeInput = document.getElementById('cause');
 const messageInput = document.getElementById('message');
 const status = document.getElementById('status');
 const downloadBtn = document.getElementById('downloadBtn');
+const generatedCountEl = document.getElementById('generatedCount');
+const downloadCountEl = document.getElementById('downloadCount');
 const shareBtn = document.getElementById('shareBtn');
 const installBtn = document.getElementById('installBtn');
 // photo action controls
@@ -23,6 +25,8 @@ let uploadedImage = null;
 let deferredPrompt = null;
 let cameraStreamObj = null;
 const FIXED_HASHTAG = '#MiVozCuenta';
+let generatedCount = 0;
+let downloadCount = 0;
 let causeMessages = {};
 let causeDefinitions = [];
 // fixed header logo (use cepeda.jpg placed at project root)
@@ -85,6 +89,26 @@ function updateCausePreview(cause) {
     causePreview.textContent = `Sugerencia: ${causeMessages[cause]}`;
   } else {
     causePreview.textContent = 'Selecciona una causa para ver un mensaje sugerido más llamativo.';
+  }
+}
+
+function loadCounters() {
+  generatedCount = parseInt(localStorage.getItem('generatedCount') || '0', 10);
+  downloadCount = parseInt(localStorage.getItem('downloadCount') || '0', 10);
+  updateCounterDisplay();
+}
+
+function saveCounters() {
+  localStorage.setItem('generatedCount', generatedCount.toString());
+  localStorage.setItem('downloadCount', downloadCount.toString());
+}
+
+function updateCounterDisplay() {
+  if (generatedCountEl) {
+    generatedCountEl.textContent = `Imágenes generadas: ${generatedCount}`;
+  }
+  if (downloadCountEl) {
+    downloadCountEl.textContent = `Descargas: ${downloadCount}`;
   }
 }
 
@@ -541,9 +565,12 @@ function drawText(header, message) {
   ctx.textAlign = 'center';
   ctx.fillStyle = '#1d4ed8';
   ctx.font = '800 26px Inter, sans-serif';
-  ctx.fillText('#MeLaJuegoPorLaVida', hashtagX, panelY + panelH - 60);
+  ctx.fillText('#MeLaJuegoPorLaVida', hashtagX, panelY + panelH - 80);
   ctx.fillStyle = '#f97316';
-  ctx.fillText('#IvanCepedaPresidente', hashtagX, panelY + panelH - 28);
+  ctx.fillText('#IvanCepedaPresidente', hashtagX, panelY + panelH - 48);
+  ctx.fillStyle = '#0f1724';
+  ctx.font = '700 22px Inter, sans-serif';
+  ctx.fillText('#AidaQuilcuéVicepresidente', hashtagX, panelY + panelH - 20);
   ctx.textAlign = 'left';
 }
 
@@ -703,6 +730,9 @@ if (cancelCaptureBtn) cancelCaptureBtn.addEventListener('click', stopCamera);
 
 supportForm.addEventListener('submit', (event) => {
   event.preventDefault();
+  generatedCount += 1;
+  saveCounters();
+  updateCounterDisplay();
   generatePoster();
 });
 
@@ -712,6 +742,9 @@ downloadBtn.addEventListener('click', () => {
   link.download = filename;
   link.href = posterCanvas.toDataURL('image/png');
   link.click();
+  downloadCount += 1;
+  saveCounters();
+  updateCounterDisplay();
 });
 
 shareBtn.addEventListener('click', async () => {
@@ -763,9 +796,11 @@ if ('serviceWorker' in navigator) {
 }
 
 loadCauseDefinitions().then(() => {
+  loadCounters();
   setStatus('Carga una foto y completa los campos para ver la vista previa.');
   generatePoster();
 }).catch(() => {
+  loadCounters();
   setStatus('Carga una foto y completa los campos para ver la vista previa.');
   generatePoster();
 });
