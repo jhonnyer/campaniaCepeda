@@ -9,9 +9,9 @@ const causeInput = document.getElementById('cause');
 const messageInput = document.getElementById('message');
 const status = document.getElementById('status');
 const downloadBtn = document.getElementById('downloadBtn');
+const copyHashtagsBtn = document.getElementById('copyHashtagsBtn');
 const generatedCountEl = document.getElementById('generatedCount');
 const downloadCountEl = document.getElementById('downloadCount');
-const shareBtn = document.getElementById('shareBtn');
 const installBtn = document.getElementById('installBtn');
 // photo action controls
 const photoActionSelect = document.getElementById('photoActionSelect');
@@ -747,26 +747,18 @@ downloadBtn.addEventListener('click', () => {
   updateCounterDisplay();
 });
 
-shareBtn.addEventListener('click', async () => {
-  if (!navigator.canShare || !navigator.canShare({ files: [] })) {
-    setStatus('Compartir no está disponible en este dispositivo. Descarga la imagen en su lugar.', true);
-    return;
-  }
-
-  posterCanvas.toBlob(async (blob) => {
-    if (!blob) {
-      setStatus('No se pudo generar la imagen para compartir.', true);
-      return;
-    }
-
-    const file = new File([blob], 'apoyo-cepeda.png', { type: 'image/png' });
+if (copyHashtagsBtn) {
+  copyHashtagsBtn.addEventListener('click', async () => {
+    const hashtags = '#MeLaJuegoPorLaVida #IvanCepedaPresidente #AidaQuilcuéVicepresidente';
     try {
-      await navigator.share({ files: [file], title: 'Apoyo a Iván Cepeda', text: 'Genera tu imagen de apoyo ciudadano.' });
+      await navigator.clipboard.writeText(hashtags);
+      setStatus('Hashtags copiados al portapapeles.');
     } catch (error) {
-      setStatus('Compartir cancelado o no soportado.', true);
+      console.error(error);
+      setStatus('No se pudo copiar los hashtags. Intenta de nuevo.', true);
     }
-  }, 'image/png');
-});
+  });
+}
 
 window.addEventListener('beforeinstallprompt', (event) => {
   event.preventDefault();
