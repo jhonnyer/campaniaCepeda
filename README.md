@@ -10,8 +10,7 @@ Aplicación web progresiva que genera imágenes de apoyo ciudadano para la campa
 - Mensaje personalizado, mensaje por causa o mensaje por defecto
 - Vista previa en la aplicación
 - Descarga en PNG
-- Compartir con Web Share API cuando está disponible
-- PWA con `manifest.json` y `service-worker.js`
+ - PWA con `manifest.json` y `service-worker.js`
 
 ## Archivos principales
 
