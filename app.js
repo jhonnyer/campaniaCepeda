@@ -69,13 +69,16 @@ function getHeaderText(name, origin) {
 }
 
 function getMessageText(message, cause) {
-  if (message.trim()) {
-    return message.trim();
+  const m = message.trim();
+  if (m) return m;
+  if (cause && causeMessages[cause]) return causeMessages[cause];
+  // prefer the empty-key cause message as the global default (comes from causes.json)
+  if (causeMessages['']) return causeMessages[''];
+  // fallback to internal defaults if present
+  if (typeof defaultMessages !== 'undefined' && defaultMessages.length) {
+    return defaultMessages[Math.floor(Math.random() * defaultMessages.length)];
   }
-  if (cause && causeMessages[cause]) {
-    return causeMessages[cause];
-  }
-  return defaultMessages[Math.floor(Math.random() * defaultMessages.length)];
+  return '';
 }
 
 function populateCauseSelect() {
@@ -535,6 +538,28 @@ function drawJustifiedText(text, maxWidth, lineHeight, startX, startY, maxHeight
   return y;
 }
 
+function measureJustifiedTextLines(text, maxWidth, font) {
+  ctx.font = font;
+  const words = text.split(' ');
+  let line = [];
+  let lines = 0;
+
+  for (let i = 0; i < words.length; i += 1) {
+    const word = words[i];
+    const testLine = line.length ? line.join(' ') + ' ' + word : word;
+    const { width: testWidth } = ctx.measureText(testLine);
+    if (testWidth > maxWidth && line.length) {
+      lines += 1;
+      line = [word];
+    } else {
+      line.push(word);
+    }
+  }
+
+  if (line.length) lines += 1;
+  return lines;
+}
+
 function drawStyledWrappedText(segments, maxWidth, lineHeight, startX, startY, maxHeight, align = 'left') {
   const words = [];
   segments.forEach((segment) => {
@@ -650,13 +675,21 @@ function drawText(header, message) {
     );
   }
 
-  const bodyY = headerEndY + 18;
   const bodyText = message.trim();
   const quotedBody = bodyText.startsWith('“') && bodyText.endsWith('”') ? bodyText : `“${bodyText}”`;
   ctx.font = bodyFont;
   ctx.fillStyle = '#24346f';
-  const availableBodyHeight = panelY + panelH - 96 - bodyY - 8;
-  drawJustifiedText(quotedBody, textWidth, 34, textX, bodyY, availableBodyHeight);
+  // compute available area between header end and the hashtag area
+  const hashtagsTop = panelY + panelH - 110; // leave space for hashtags
+  const availableBodyHeight = Math.max(0, hashtagsTop - headerEndY - 12);
+  const lineHeightBody = 34;
+  const lines = measureJustifiedTextLines(quotedBody, textWidth, bodyFont);
+  const textHeight = lines * lineHeightBody;
+  let bodyStartY = headerEndY + 18;
+  if (textHeight < availableBodyHeight) {
+    bodyStartY = headerEndY + Math.round((availableBodyHeight - textHeight) / 2) + 8;
+  }
+  drawJustifiedText(quotedBody, textWidth, lineHeightBody, textX, bodyStartY, availableBodyHeight);
 
   // fixed hashtags at the bottom of the right panel (larger)
   const hashtagX = panelX + panelW / 2;
