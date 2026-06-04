@@ -27,7 +27,21 @@
             <legend>Información</legend>
 
             <label for="photo">Fotografía *</label>
-            <input type="file" id="photo" accept="image/jpeg,image/jpg,image/png,image/webp" required />
+            <div class="photo-action">
+              <input type="file" id="photo" accept="image/jpeg,image/jpg,image/png,image/webp" capture="environment" required style="display:none" />
+              <select id="photoActionSelect" aria-label="Opciones de foto">
+                <option value="">Seleccione acción…</option>
+                <option value="take">Tomar foto</option>
+                <option value="upload">Subir desde dispositivo</option>
+                <option value="remove">Quitar foto</option>
+              </select>
+              <img id="photoPreview" alt="miniatura" style="display:none; width:56px; height:56px; border-radius:8px; margin-left:12px; object-fit:cover; border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.12);" />
+            </div>
+            <video id="cameraStream" playsinline autoplay style="display:none; width:100%; max-width:320px; border-radius:8px; margin-top:8px;"></video>
+            <div style="display:none; margin-top:8px;" id="captureWrapper">
+              <button type="button" id="captureBtn">Capturar</button>
+              <button type="button" id="cancelCaptureBtn">Cancelar</button>
+            </div>
             <small>Tamaño máximo 10 MB. Formatos JPG, JPEG, PNG, WEBP.</small>
 
             <label for="name">Nombre *</label>
@@ -52,6 +66,8 @@
 
             <label for="message">Mensaje personalizado</label>
             <textarea id="message" maxlength="150" placeholder="Quiero una Colombia donde los jóvenes tengan más oportunidades."></textarea>
+
+            <!-- Hashtag fijo dibujado en el pie del póster -->
 
             <div class="actions">
               <button type="submit" id="generateBtn">Generar imagen</button>

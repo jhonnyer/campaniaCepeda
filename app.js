@@ -11,8 +11,21 @@ const status = document.getElementById('status');
 const downloadBtn = document.getElementById('downloadBtn');
 const shareBtn = document.getElementById('shareBtn');
 const installBtn = document.getElementById('installBtn');
+// photo action controls
+const photoActionSelect = document.getElementById('photoActionSelect');
+const photoPreview = document.getElementById('photoPreview');
+const cameraStream = document.getElementById('cameraStream');
+const captureBtn = document.getElementById('captureBtn');
+const cancelCaptureBtn = document.getElementById('cancelCaptureBtn');
+const captureWrapper = document.getElementById('captureWrapper');
 let uploadedImage = null;
 let deferredPrompt = null;
+let cameraStreamObj = null;
+const FIXED_HASHTAG = '#MiVozCuenta';
+// fixed header logo (use cepeda.jpg placed at project root)
+let campaignLogo = new Image();
+campaignLogo.src = 'img/cepeda.jpg';
+campaignLogo.onload = () => { try { generatePoster(); } catch (e) {} };
 
 const defaultMessages = [
   'Creo en una Colombia donde la paz, la justicia social y las oportunidades lleguen a todos los territorios. Por eso apoyo a Iván Cepeda.',
@@ -78,57 +91,107 @@ function drawBackground() {
 
 function drawTemplate() {
   ctx.fillStyle = '#ffffff';
-  ctx.fillRect(48, 48, 984, 984);
+  ctx.fillRect(24, 24, 1032, 1032);
 
   ctx.fillStyle = '#002f6c';
-  ctx.fillRect(48, 48, 984, 156);
-  ctx.fillStyle = '#f7b600';
-  ctx.fillRect(48, 156, 984, 18);
+  // header background (fallback color) - make header taller to show cover image
+  const headerX = 24;
+  const headerY = 24;
+  const headerW = 1032;
+  const headerH = 300; // increased height
+  ctx.fillRect(headerX, headerY, headerW, headerH);
 
-  ctx.fillStyle = '#ffffff';
-  ctx.font = '700 46px Inter, sans-serif';
-  ctx.fillText('Apoyo ciudadano', 84, 110);
+  // draw campaign image as full-width header cover (if available)
+  if (campaignLogo && campaignLogo.complete && campaignLogo.width && campaignLogo.height) {
+    try {
+      const dx = headerX;
+      const dy = headerY;
+      const dw = headerW;
+      const dh = headerH;
+      const scale = Math.max(dw / campaignLogo.width, dh / campaignLogo.height);
+      const sw = Math.round(dw / scale);
+      const sh = Math.round(dh / scale);
+      const sx = Math.round((campaignLogo.width - sw) / 2);
+      const sy = Math.round((campaignLogo.height - sh) / 2);
+      ctx.drawImage(campaignLogo, sx, sy, sw, sh, dx, dy, dw, dh);
+    } catch (e) {
+      // fallback: keep colored header
+    }
+  }
   ctx.font = '500 30px Inter, sans-serif';
-  ctx.fillText('Iván Cepeda - Presidencia', 84, 150);
+  ctx.fillStyle = '#ffffff';
+  // header title vertically centered
+  ctx.fillText('Iván Cepeda - Presidencia', 60, headerY + Math.round(headerH / 2) + 6);
+
+  // left and right panels (same size)
+  const panelX = 60;
+  const panelY = headerY + headerH + 12; // position panels below expanded header
+  const panelW = 440;
+  const panelH = 560;
 
   ctx.fillStyle = '#f2f5fb';
-  ctx.fillRect(84, 220, 420, 560);
+  ctx.fillRect(panelX, panelY, panelW, panelH);
   ctx.strokeStyle = '#d8e2f5';
   ctx.lineWidth = 2;
-  ctx.strokeRect(84, 220, 420, 560);
+  ctx.strokeRect(panelX, panelY, panelW, panelH);
 
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(540, 220, 420, 560);
+  // right text panel slightly tinted for better contrast
+  ctx.fillStyle = '#fbfdff';
+  ctx.fillRect(panelX + panelW + 16, panelY, panelW, panelH);
   ctx.strokeStyle = '#d8e2f5';
-  ctx.strokeRect(540, 220, 420, 560);
+  ctx.strokeRect(panelX + panelW + 16, panelY, panelW, panelH);
 
-  ctx.fillStyle = '#003d7a';
-  ctx.font = '600 24px Inter, sans-serif';
-  ctx.fillText('Mensaje de apoyo', 560, 280);
+  // no 'Mensaje de apoyo' text as requested
 }
 
 function drawImageCrop(img) {
-  const x = 100;
-  const y = 260;
-  const w = 380;
-  const h = 520;
+  // image area sits inside the left panel with consistent padding
+  const panelX = 60;
+  const headerY = 24;
+  const headerH = 300;
+  const panelY = headerY + headerH + 12;
+  const pad = 16;
+  const x = panelX + pad;
+  const y = panelY + pad;
+  const w = 440 - pad * 2;
+  const h = 560 - pad * 2;
 
   if (!img) {
     drawPlaceholderImage(x, y, w, h);
     return;
   }
+  // draw framed photo with shadow and cover-fit crop for a more attractive look
+  const framePad = 10;
+  ctx.save();
+  // outer shadowed frame
+  ctx.shadowColor = 'rgba(0,0,0,0.18)';
+  ctx.shadowBlur = 18;
+  ctx.fillStyle = '#ffffff';
+  ctx.beginPath();
+  ctx.roundRect(x - framePad, y - framePad, w + framePad * 2, h + framePad * 2, 34);
+  ctx.fill();
+  ctx.restore();
 
-  const ratio = Math.min(img.width / w, img.height / h);
-  const sw = w * ratio;
-  const sh = h * ratio;
-  const sx = (img.width - sw) / 2;
-  const sy = (img.height - sh) / 2;
+  // compute cover crop (scale image so it fills area)
+  const scale = Math.max(w / img.width, h / img.height);
+  const sw = Math.round(w / scale);
+  const sh = Math.round(h / scale);
+  const sx = Math.round((img.width - sw) / 2);
+  const sy = Math.round((img.height - sh) / 2);
+
   ctx.save();
   ctx.beginPath();
   ctx.roundRect(x, y, w, h, 28);
   ctx.clip();
   ctx.drawImage(img, sx, sy, sw, sh, x, y, w, h);
   ctx.restore();
+
+  // inner border
+  ctx.beginPath();
+  ctx.roundRect(x, y, w, h, 28);
+  ctx.lineWidth = 2;
+  ctx.strokeStyle = '#d8e2f5';
+  ctx.stroke();
 }
 
 function drawPlaceholderImage(x, y, w, h) {
@@ -195,10 +258,51 @@ function wrapText(text, maxWidth, lineHeight, startX, startY) {
   }
 }
 
+// Draw justified text: distribute extra space between words for each full line
+function drawJustifiedText(text, maxWidth, lineHeight, startX, startY) {
+  const words = text.split(' ');
+  let line = [];
+  let y = startY;
+
+  for (let i = 0; i < words.length; i += 1) {
+    const word = words[i];
+    const testLine = line.length ? line.join(' ') + ' ' + word : word;
+    const { width: testWidth } = ctx.measureText(testLine);
+    if (testWidth > maxWidth && line.length) {
+      // justify current line
+      const lineText = line.join(' ');
+      const wordsInLine = line;
+      const wordsWidth = wordsInLine.reduce((sum, w) => sum + ctx.measureText(w).width, 0);
+      const spaceCount = wordsInLine.length - 1;
+      const extraSpace = spaceCount > 0 ? (maxWidth - wordsWidth) / spaceCount : 0;
+      let x = startX;
+      for (let j = 0; j < wordsInLine.length; j += 1) {
+        ctx.fillText(wordsInLine[j], x, y);
+        x += ctx.measureText(wordsInLine[j]).width + extraSpace;
+      }
+      line = [word];
+      y += lineHeight;
+    } else {
+      line.push(word);
+    }
+  }
+
+  // draw last line left-aligned
+  if (line.length) {
+    ctx.fillText(line.join(' '), startX, y);
+  }
+}
+
 function drawText(header, message) {
-  const textX = 560;
-  const textWidth = 380;
-  const startY = 320;
+  const panelX = 60;
+  const panelW = 440;
+  const panelH = 560;
+  const headerY = 24;
+  const headerH = 300;
+  const panelY = headerY + headerH + 12;
+  const textX = panelX + panelW + 36; // right panel inner start
+  const textWidth = panelW - 56;
+  const startY = panelY + 40;
 
   ctx.fillStyle = '#003d7a';
   ctx.font = '700 32px Inter, sans-serif';
@@ -207,11 +311,21 @@ function drawText(header, message) {
 
   ctx.fillStyle = '#1d2b4b';
   ctx.font = '500 26px Inter, sans-serif';
-  wrapText(message, textWidth, 38, textX, startY + 90);
+  // draw justified message text
+  drawJustifiedText(message, textWidth, 38, textX, startY + 90);
 
   ctx.fillStyle = '#003d7a';
   ctx.font = '600 24px Inter, sans-serif';
-  ctx.fillText('Mi voz cuenta', textX, 740);
+  const voiceY = panelY + panelH - 60;
+  ctx.fillText('Mi voz cuenta', textX, voiceY);
+
+  // fixed hashtags at the bottom center (two lines) — moved up
+  ctx.textAlign = 'center';
+  ctx.fillStyle = '#f7b600';
+  ctx.font = '700 22px Inter, sans-serif';
+  ctx.fillText('#MeLaJuegoPorLaVida', 540, 860);
+  ctx.fillText('#IvanCepedaPresidente', 540, 888);
+  ctx.textAlign = 'left';
 }
 
 function generatePoster() {
@@ -263,6 +377,16 @@ photoInput.addEventListener('change', (event) => {
     img.src = reader.result;
   };
   reader.readAsDataURL(file);
+  // update UX: show thumbnail
+  try {
+    if (photoPreview) {
+      const url = URL.createObjectURL(file);
+      photoPreview.src = url;
+      photoPreview.style.display = 'inline-block';
+      // revoke after image loads
+      photoPreview.onload = () => URL.revokeObjectURL(url);
+    }
+  } catch (e) {}
 });
 
 // Live preview: update poster as user types or changes fields
@@ -278,6 +402,81 @@ causeInput.addEventListener('change', () => {
   generatePoster();
 });
 messageInput.addEventListener('input', () => generatePoster());
+
+// photo action dropdown behavior
+photoActionSelect.addEventListener('change', (e) => {
+  const v = e.target.value;
+  if (v === 'take') {
+    startCamera();
+  } else if (v === 'upload') {
+    photoInput.click();
+  } else if (v === 'remove') {
+    uploadedImage = null;
+    photoInput.value = '';
+    if (photoPreview) { photoPreview.style.display = 'none'; photoPreview.src = ''; }
+    generatePoster();
+    setStatus('Foto eliminada.', false);
+  }
+  // reset dropdown to placeholder
+  e.target.value = '';
+});
+
+// Camera capture handlers
+async function startCamera() {
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+    setStatus('Este navegador no soporta captura por cámara.', true);
+    return;
+  }
+  try {
+    cameraStreamObj = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }, audio: false });
+    cameraStream.srcObject = cameraStreamObj;
+    cameraStream.style.display = 'block';
+    captureWrapper.style.display = 'block';
+    setStatus('Cámara activa. Pulsa Capturar para usar la foto.', false);
+  } catch (err) {
+    console.error(err);
+    setStatus('No se pudo abrir la cámara. Comprueba permisos.', true);
+  }
+}
+
+function stopCamera() {
+  if (cameraStreamObj) {
+    cameraStreamObj.getTracks().forEach((t) => t.stop());
+    cameraStreamObj = null;
+  }
+  cameraStream.srcObject = null;
+  cameraStream.style.display = 'none';
+  captureWrapper.style.display = 'none';
+  setStatus('Cámara detenida.', false);
+}
+
+function captureFromCamera() {
+  try {
+    const video = cameraStream;
+    const w = video.videoWidth || 1280;
+    const h = video.videoHeight || 720;
+    const tmp = document.createElement('canvas');
+    tmp.width = w;
+    tmp.height = h;
+    const tctx = tmp.getContext('2d');
+    tctx.drawImage(video, 0, 0, w, h);
+    const dataUrl = tmp.toDataURL('image/png');
+    const img = new Image();
+    img.onload = () => {
+      updatePreview(img);
+      setStatus('Foto capturada y aplicada.', false);
+    };
+    img.src = dataUrl;
+    // stop camera after capture
+    stopCamera();
+  } catch (e) {
+    console.error(e);
+    setStatus('No se pudo capturar la foto.', true);
+  }
+}
+
+captureBtn.addEventListener('click', captureFromCamera);
+if (cancelCaptureBtn) cancelCaptureBtn.addEventListener('click', stopCamera);
 
 supportForm.addEventListener('submit', (event) => {
   event.preventDefault();
