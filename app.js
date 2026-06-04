@@ -57,10 +57,15 @@ function isValidImage(file) {
 }
 
 function getHeaderText(name, origin) {
-  if (!origin.trim()) {
-    return `Me llamo ${name.trim()}.`;
+  const trimmedName = name.trim();
+  const trimmedOrigin = origin.trim();
+  if (!trimmedName) {
+    return 'Quiero que Iván Cepeda sea mi Presidente.';
   }
-  return `Me llamo ${name.trim()}, de ${origin.trim()}.`;
+  if (!trimmedOrigin) {
+    return `Me llamo ${trimmedName} y quiero que Iván Cepeda sea mi Presidente.`;
+  }
+  return `Me llamo ${trimmedName} de ${trimmedOrigin} y quiero que Iván Cepeda sea mi Presidente.`;
 }
 
 function getMessageText(message, cause) {
@@ -530,6 +535,60 @@ function drawJustifiedText(text, maxWidth, lineHeight, startX, startY, maxHeight
   return y;
 }
 
+function drawStyledWrappedText(segments, maxWidth, lineHeight, startX, startY, maxHeight) {
+  const words = [];
+  segments.forEach((segment) => {
+    const parts = segment.text.split(' ');
+    parts.forEach((word, index) => {
+      const text = `${word}${index < parts.length - 1 ? ' ' : ''}`;
+      words.push({ text, color: segment.color, font: segment.font });
+    });
+  });
+
+  let line = [];
+  let y = startY;
+  const limitY = maxHeight ? startY + maxHeight : Infinity;
+
+  const drawLine = (lineWords, isLast) => {
+    const totalWidth = lineWords.reduce((sum, item) => {
+      ctx.font = item.font;
+      return sum + ctx.measureText(item.text).width;
+    }, 0);
+    const gaps = lineWords.length - 1;
+    const extraSpace = !isLast && gaps > 0 ? (maxWidth - totalWidth) / gaps : 0;
+    let x = startX;
+    lineWords.forEach((item, index) => {
+      ctx.font = item.font;
+      ctx.fillStyle = item.color;
+      ctx.fillText(item.text, x, y);
+      x += ctx.measureText(item.text).width + extraSpace;
+    });
+  };
+
+  words.forEach((word) => {
+    const testLine = line.concat(word);
+    const width = testLine.reduce((sum, item) => {
+      ctx.font = item.font;
+      return sum + ctx.measureText(item.text).width;
+    }, 0);
+
+    if (width > maxWidth && line.length) {
+      drawLine(line, false);
+      line = [word];
+      y += lineHeight;
+    } else {
+      line.push(word);
+    }
+  });
+
+  if (line.length && y <= limitY) {
+    drawLine(line, true);
+    y += lineHeight;
+  }
+
+  return y;
+}
+
 function drawText(header, message) {
   const panelX = 560; // right card X (left 60 + leftCardW 480 + 20 gap)
   const panelW = 480;
@@ -539,25 +598,58 @@ function drawText(header, message) {
   const textWidth = panelW - 56;
   const startY = panelY + 44;
 
-  // split header into label and name/origin
   const fullHeader = header || '';
-  const namePart = fullHeader.replace(/^Me llamo\s*/i, '').replace(/\.+$/, '');
+  const blueColor = '#1d4ed8';
+  const darkColor = '#0f172a';
+  const headerFont = '800 30px Inter, sans-serif';
+  const bodyFont = '500 26px Inter, sans-serif';
+  const headerLineHeight = 38;
 
-  // label and name same size, name in blue
-  ctx.textAlign = 'left';
-  ctx.font = '800 34px Inter, sans-serif';
-  ctx.fillStyle = '#0f172a';
-  ctx.fillText('Me llamo', textX, startY);
+  let headerEndY;
+  if (fullHeader.toLowerCase().startsWith('me llamo')) {
+    const presidentPhrase = 'Iván Cepeda';
+    const startPhrase = 'Me llamo ';
+    const endPhrase = ` y quiero que ${presidentPhrase} sea mi Presidente.`;
+    const nameSection = fullHeader.substring(startPhrase.length, fullHeader.indexOf(endPhrase));
+    const deMatch = nameSection.match(/^(.+?) de (.+)$/i);
+    const namePart = deMatch ? deMatch[1] : nameSection;
+    const deSection = deMatch ? ` de ${deMatch[2]}` : '';
 
-  ctx.fillStyle = '#1d4ed8';
-  const nameStartY = startY + 38;
-  const nameEndY = wrapText(namePart, textWidth, 40, textX, nameStartY);
+    const segments = [
+      { text: startPhrase, color: darkColor, font: headerFont },
+      { text: namePart, color: blueColor, font: headerFont }
+    ];
+    if (deSection) {
+      segments.push({ text: deSection, color: darkColor, font: headerFont });
+    }
+    segments.push({ text: ' y quiero que ', color: darkColor, font: headerFont });
+    segments.push({ text: presidentPhrase, color: blueColor, font: headerFont });
+    segments.push({ text: ' sea mi Presidente.', color: darkColor, font: headerFont });
 
+    headerEndY = drawStyledWrappedText(segments, textWidth, headerLineHeight, textX, startY, panelH - 160);
+  } else {
+    const presidentPhrase = 'Iván Cepeda';
+    const beforePresident = 'Quiero que ';
+    const afterPresident = ' sea mi Presidente.';
+
+    headerEndY = drawStyledWrappedText(
+      [
+        { text: beforePresident, color: darkColor, font: headerFont },
+        { text: presidentPhrase, color: blueColor, font: headerFont },
+        { text: afterPresident, color: darkColor, font: headerFont }
+      ],
+      textWidth,
+      headerLineHeight,
+      textX,
+      startY,
+      panelH - 160
+    );
+  }
+
+  const bodyY = headerEndY + 18;
+  ctx.font = bodyFont;
   ctx.fillStyle = '#24346f';
-  ctx.font = '500 26px Inter, sans-serif';
-  const bodyY = nameEndY + 14;
-  const voiceY = panelY + panelH - 96;
-  const availableBodyHeight = voiceY - bodyY - 8;
+  const availableBodyHeight = panelY + panelH - 96 - bodyY - 8;
   drawJustifiedText(message, textWidth, 34, textX, bodyY, availableBodyHeight);
 
   // fixed hashtags at the bottom of the right panel (larger)
