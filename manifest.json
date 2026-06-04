@@ -1,0 +1,16 @@
+{
+  "name": "Apoyo Ciudadano - Iván Cepeda",
+  "short_name": "Apoyo Cepeda",
+  "description": "Generador de imagen personalizada de apoyo ciudadano.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#003d7a",
+  "theme_color": "#003d7a",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml"
+    }
+  ]
+}

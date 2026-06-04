@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#003d7a" />
+  <title>Apoyo Ciudadano - Iván Cepeda</title>
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='45' fill='%23003d7a'/%3E%3Ctext x='50' y='57' font-size='45' text-anchor='middle' fill='%23fff' font-family='Arial'%3E%C3%8D%3C/text%3E%3C/svg%3E" />
+</head>
+<body>
+  <div class="app-shell">
+    <header class="hero">
+      <div>
+        <p class="eyebrow">Generador de Imagen</p>
+        <h1>Apoya a Iván Cepeda con tu mensaje</h1>
+        <p>Sube una foto, escribe tu nombre y genera una imagen lista para compartir.</p>
+      </div>
+      <button id="installBtn" class="install-btn">Instalar app</button>
+    </header>
+
+    <main class="content">
+      <section class="form-panel">
+        <form id="supportForm" novalidate>
+          <fieldset>
+            <legend>Información</legend>
+
+            <label for="photo">Fotografía *</label>
+            <input type="file" id="photo" accept="image/jpeg,image/jpg,image/png,image/webp" required />
+            <small>Tamaño máximo 10 MB. Formatos JPG, JPEG, PNG, WEBP.</small>
+
+            <label for="name">Nombre *</label>
+            <input type="text" id="name" maxlength="100" placeholder="Jhonnyer" required />
+
+            <label for="origin">Lugar de origen</label>
+            <input type="text" id="origin" maxlength="100" placeholder="Popayán, Cauca" />
+
+            <label for="cause">Causa principal</label>
+            <select id="cause">
+              <option value="">Ninguna</option>
+              <option value="Paz">Paz</option>
+              <option value="Educación">Educación</option>
+              <option value="Salud">Salud</option>
+              <option value="Juventud">Juventud</option>
+              <option value="Campo">Campo</option>
+              <option value="Empleo">Empleo</option>
+              <option value="Derechos Humanos">Derechos Humanos</option>
+              <option value="Justicia Social">Justicia Social</option>
+              <option value="Medio Ambiente">Medio Ambiente</option>
+            </select>
+
+            <label for="message">Mensaje personalizado</label>
+            <textarea id="message" maxlength="150" placeholder="Quiero una Colombia donde los jóvenes tengan más oportunidades."></textarea>
+
+            <div class="actions">
+              <button type="submit" id="generateBtn">Generar imagen</button>
+              <button type="button" id="shareBtn" class="secondary">Compartir</button>
+            </div>
+          </fieldset>
+        </form>
+      </section>
+
+      <section class="preview-panel">
+        <div class="preview-card">
+          <div class="preview-label">Vista previa</div>
+          <canvas id="posterCanvas" width="1080" height="1080"></canvas>
+          <div class="preview-actions">
+            <button id="downloadBtn">Descargar Imagen</button>
+            <div id="status" class="status">Carga una foto y completa los campos para ver la vista previa.</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

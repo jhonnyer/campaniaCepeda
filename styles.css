@@ -1,0 +1,256 @@
+:root {
+  color-scheme: dark;
+  color: #111;
+  background: #f6f7fb;
+  font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: linear-gradient(180deg, #eaf1ff 0%, #ffffff 100%);
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.app-shell {
+  max-width: 1360px;
+  margin: 0 auto;
+  padding: 24px;
+}
+
+.hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+  padding: 28px 24px;
+  background: #003d7a;
+  color: #fff;
+  border-radius: 24px;
+  margin-bottom: 24px;
+}
+
+.eyebrow {
+  margin: 0 0 10px;
+  font-size: 0.95rem;
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+}
+
+.hero h1 {
+  margin: 0 0 12px;
+  font-size: clamp(2rem, 3vw, 3rem);
+  line-height: 1.05;
+}
+
+.hero p {
+  margin: 0;
+  max-width: 640px;
+  line-height: 1.65;
+}
+
+.install-btn {
+  display: none;
+  border: none;
+  background: #f7b600;
+  color: #003d7a;
+  font-weight: 700;
+  padding: 14px 20px;
+  border-radius: 999px;
+  cursor: pointer;
+}
+
+.content {
+  display: grid;
+  grid-template-columns: 1fr 1.15fr;
+  gap: 24px;
+}
+
+.form-panel,
+.preview-panel {
+  background: #fff;
+  border-radius: 24px;
+  padding: 24px;
+  box-shadow: 0 28px 60px rgba(13, 31, 73, 0.08);
+}
+
+form fieldset {
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+
+form legend {
+  font-size: 1.15rem;
+  font-weight: 700;
+  margin-bottom: 18px;
+}
+
+label {
+  display: block;
+  margin-top: 18px;
+  font-weight: 600;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  margin-top: 8px;
+  border: 1px solid #d5d9e3;
+  border-radius: 16px;
+  padding: 14px 16px;
+  background: #fbfbff;
+  color: #111827 !important; /* softer near-black */
+  font-weight: 500; /* normal weight for less emphasis */
+  -webkit-text-fill-color: #111827 !important;
+  caret-color: #0f1724;
+  transition: border-color 0.2s ease;
+}
+
+input::placeholder,
+textarea::placeholder,
+  color: #9ca3af;
+}
+
+/* ensure select control text is visible across browsers */
+select,
+select option {
+  color: #111827 !important;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: #003d7a;
+  outline: none;
+}
+
+input:-webkit-autofill,
+textarea:-webkit-autofill,
+select:-webkit-autofill {
+  -webkit-text-fill-color: #000000 !important;
+  box-shadow: 0 0 0px 1000px #fbfbff inset !important;
+}
+
+/* ensure selected text in inputs remains readable */
+input::selection,
+textarea::selection,
+select::selection {
+  background: #cfe0ff;
+  color: #000000;
+}
+
+textarea {
+  min-height: 120px;
+  resize: vertical;
+}
+
+small {
+  display: block;
+  margin-top: 6px;
+  color: #5f6d83;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  border-radius: 16px;
+  padding: 14px 20px;
+  font-weight: 700;
+}
+
+button#generateBtn {
+  background: #003d7a;
+  color: #fff;
+  flex: 1;
+  min-width: 170px;
+}
+
+button#shareBtn,
+button#downloadBtn {
+  background: #eef3ff;
+  color: #003d7a;
+}
+
+button.secondary {
+  background: #eef3ff;
+}
+
+.preview-card {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.preview-label {
+  font-size: 0.95rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.16em;
+  color: #003d7a;
+}
+
+canvas {
+  width: 100%;
+  height: auto;
+  border-radius: 24px;
+  background: #e9eef8;
+  max-height: 680px;
+  object-fit: contain;
+}
+
+canvas {
+  box-shadow: 0 24px 60px rgba(2, 30, 70, 0.12);
+  border: 8px solid #fff;
+}
+
+.preview-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.status {
+  color: #334155;
+  line-height: 1.6;
+}
+
+@media (max-width: 980px) {
+  .content {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 620px) {
+  .app-shell {
+    padding: 16px;
+  }
+
+  .hero {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .install-btn {
+    width: 100%;
+  }
+}
