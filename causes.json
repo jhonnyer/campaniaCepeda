@@ -1,6 +1,11 @@
 {
   "causes": [
     {
+      "value": "",
+      "label": "Ninguna",
+      "message": "Quiero participar con mi voz y apoyar a Iván Cepeda porque creo en un país más unido y con oportunidades para todos."
+    },
+    {
       "value": "Paz",
       "label": "Paz",
       "message": "¡Quiero una Colombia en paz, sin violencia ni miedo, donde la esperanza sea para todos! Apoyo a Iván Cepeda."

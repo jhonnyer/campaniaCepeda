@@ -72,17 +72,16 @@ function getMessageText(message, cause) {
 function populateCauseSelect() {
   if (!causeInput) return;
   const currentValue = causeInput.value;
-  const options = ['<option value="">Ninguna</option>'];
-  causeDefinitions.forEach((item) => {
+  const options = causeDefinitions.map((item) => {
     const selected = item.value === currentValue ? ' selected' : '';
-    options.push(`<option value="${item.value}"${selected}>${item.label}</option>`);
+    return `<option value="${item.value}"${selected}>${item.label}</option>`;
   });
   causeInput.innerHTML = options.join('');
 }
 
 function updateCausePreview(cause) {
   if (!causePreview) return;
-  if (cause && causeMessages[cause]) {
+  if (causeMessages[cause]) {
     causePreview.textContent = `Sugerencia: ${causeMessages[cause]}`;
   } else {
     causePreview.textContent = 'Selecciona una causa para ver un mensaje sugerido más llamativo.';
@@ -103,6 +102,7 @@ async function loadCauseDefinitions() {
   } catch (error) {
     console.warn('No se pudo cargar causes.json, usando textos internos.', error);
     causeDefinitions = [
+      { value: '', label: 'Ninguna', message: 'Quiero participar con mi voz y apoyar a Iván Cepeda porque creo en un país más unido y con oportunidades para todos.' },
       { value: 'Paz', label: 'Paz', message: '¡Quiero una Colombia en paz, sin violencia ni miedo, donde la esperanza sea para todos! Apoyo a Iván Cepeda.' },
       { value: 'Educación', label: 'Educación', message: 'La educación debe abrir puertas y transformar vidas. Apoyo a Iván Cepeda para que esto sea una realidad en todo el país.' },
       { value: 'Salud', label: 'Salud', message: 'La salud es un derecho, no un privilegio. Apoyo a Iván Cepeda para que la atención llegue a todas las familias.' },
@@ -113,6 +113,11 @@ async function loadCauseDefinitions() {
       { value: 'Justicia Social', label: 'Justicia Social', message: 'La justicia social es urgente y no puede esperar. Quiero un país más equitativo para todas y todos.' },
       { value: 'Medio Ambiente', label: 'Medio Ambiente', message: 'Cuidar la naturaleza es cuidar nuestro futuro. Apoyo políticas que protejan ríos, bosques y comunidades.' }
     ];
+  }
+
+  const hasNone = causeDefinitions.some((item) => item.value === '');
+  if (!hasNone) {
+    causeDefinitions.unshift({ value: '', label: 'Ninguna', message: 'Quiero participar con mi voz y apoyar a Iván Cepeda porque creo en un país más unido y con oportunidades para todos.' });
   }
 
   causeMessages = causeDefinitions.reduce((acc, item) => {
@@ -611,7 +616,7 @@ causeInput.addEventListener('change', () => {
   setStatus('Actualizando vista previa según causa seleccionada...', false);
   const cause = causeInput.value;
   const currentText = messageInput.value.trim();
-  if (cause && causeMessages[cause]) {
+  if (causeMessages[cause]) {
     if (!currentText || isCauseMessage(currentText)) {
       messageInput.value = causeMessages[cause];
     }
