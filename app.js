@@ -74,95 +74,129 @@ function getMessageText(message, cause) {
 }
 
 function drawBackground() {
-  const gradient = ctx.createLinearGradient(0, 0, 1080, 1080);
-  gradient.addColorStop(0, '#002f6c');
-  gradient.addColorStop(1, '#4786d5');
-  ctx.fillStyle = gradient;
+  // lighter, softer background similar to candidate card
+  const g = ctx.createLinearGradient(0, 0, 1080, 1080);
+  g.addColorStop(0, '#f6fbff'); // very light blue
+  g.addColorStop(0.6, '#fff7ec'); // soft peach
+  g.addColorStop(1, '#fffaf0'); // warm cream
+  ctx.fillStyle = g;
   ctx.fillRect(0, 0, 1080, 1080);
 
-  ctx.fillStyle = 'rgba(255,255,255,0.14)';
-  for (let i = 0; i < 7; i += 1) {
-    const size = 340 + i * 70;
+  // subtle decorative overlay for texture (very light)
+  ctx.fillStyle = 'rgba(255,255,255,0.04)';
+  for (let i = 0; i < 4; i += 1) {
     ctx.beginPath();
-    ctx.arc(540, 540, size, 0, Math.PI * 2);
+    ctx.arc(540, 220 + i * 180, 360 - i * 50, 0, Math.PI * 2);
     ctx.fill();
   }
+
+  // soft border
+  ctx.strokeStyle = 'rgba(255,255,255,0.6)';
+  ctx.lineWidth = 10;
+  ctx.strokeRect(12, 12, 1056, 1056);
 }
 
 function drawTemplate() {
-  ctx.fillStyle = '#ffffff';
-  ctx.fillRect(24, 24, 1032, 1032);
+  const topCardX = 60;
+  const topCardY = 40;
+  const topCardW = 960; // wider candidate card to show faces more
+  const topCardH = 480; // taller so faces are visible
+  const bottomY = topCardY + topCardH + 20;
+  const leftCardX = 60;
+  const leftCardW = 480; // make bottom cards the same width
+  const leftCardH = 480; // and same height
+  const rightCardX = leftCardX + leftCardW + 20;
+  const rightCardW = 480;
+  const rightCardH = leftCardH;
 
-  ctx.fillStyle = '#002f6c';
-  // header background (fallback color) - make header taller to show cover image
-  const headerX = 24;
-  const headerY = 24;
-  const headerW = 1032;
-  const headerH = 420; // más espacio para el header
-  ctx.fillRect(headerX, headerY, headerW, headerH);
+  // top candidate image card
+  ctx.save();
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.88)';
+  ctx.shadowColor = 'rgba(15, 23, 42, 0.16)';
+  ctx.shadowBlur = 34;
+  ctx.shadowOffsetY = 12;
+  ctx.roundRect(topCardX, topCardY, topCardW, topCardH, 34);
+  ctx.fill();
+  ctx.restore();
 
-  // draw campaign image as full-width header cover (if available)
+  // remove top card border (clean look)
+  ctx.strokeStyle = 'rgba(0,0,0,0)';
+  ctx.lineWidth = 0;
+  // ctx.roundRect(topCardX, topCardY, topCardW, topCardH, 34); ctx.stroke();
+
   if (campaignLogo && campaignLogo.complete && campaignLogo.width && campaignLogo.height) {
     try {
-      const dx = headerX;
-      const dy = headerY;
-      const dw = headerW;
-      const dh = headerH;
-      const scale = Math.max(dw / campaignLogo.width, dh / campaignLogo.height);
-      const sw = Math.round(dw / scale);
-      const sh = Math.round(dh / scale);
-      const sx = Math.round((campaignLogo.width - sw) / 2);
-      const sy = Math.round((campaignLogo.height - sh) / 2);
-      ctx.drawImage(campaignLogo, sx, sy, sw, sh, dx, dy, dw, dh);
+      const cropX = topCardX + 12;
+      const cropY = topCardY + 12;
+      const cropW = topCardW - 24;
+      const cropH = topCardH - 24;
+      const scale = Math.max(cropW / campaignLogo.width, cropH / campaignLogo.height);
+      const sw = Math.round(cropW / scale);
+      const sh = Math.round(cropH / scale);
+      let sx = Math.round((campaignLogo.width - sw) / 2);
+      let sy = Math.round((campaignLogo.height - sh) / 2);
+      // nudge crop slightly up to favor faces in many photos
+      sy = Math.max(0, sy - Math.round(sh * 0.08));
+      ctx.save();
+      ctx.beginPath();
+      ctx.roundRect(cropX, cropY, cropW, cropH, 28);
+      ctx.clip();
+      ctx.drawImage(campaignLogo, sx, sy, sw, sh, cropX, cropY, cropW, cropH);
+      ctx.restore();
     } catch (e) {
-      // fallback: keep colored header
+      // fallback: empty top card
     }
   }
 
-  // overlay so the cover stays legible
-  ctx.fillStyle = 'rgba(0, 0, 0, 0.16)';
-  ctx.fillRect(headerX, headerY, headerW, headerH);
+  // bottom left photo card
+  ctx.save();
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.94)';
+  ctx.shadowColor = 'rgba(15, 23, 42, 0.16)';
+  ctx.shadowBlur = 28;
+  ctx.shadowOffsetY = 9;
+  ctx.roundRect(leftCardX, bottomY, leftCardW, leftCardH, 32);
+  ctx.fill();
+  ctx.restore();
 
-  // left and right panels (same size)
-  const panelX = 60;
-  const panelY = headerY + headerH + 12; // position panels below expanded header
-  const panelW = 440;
-  const panelH = 560;
+  // remove left bottom card border
+  ctx.strokeStyle = 'rgba(0,0,0,0)';
+  ctx.lineWidth = 0;
+  // ctx.roundRect(leftCardX, bottomY, leftCardW, leftCardH, 32); ctx.stroke();
 
-  ctx.fillStyle = '#f2f5fb';
-  ctx.fillRect(panelX, panelY, panelW, panelH);
-  ctx.strokeStyle = '#d8e2f5';
-  ctx.lineWidth = 2;
-  ctx.strokeRect(panelX, panelY, panelW, panelH);
+  // bottom right text card
+  ctx.save();
+  ctx.fillStyle = 'rgba(255, 255, 255, 0.96)';
+  ctx.shadowColor = 'rgba(15, 23, 42, 0.14)';
+  ctx.shadowBlur = 24;
+  ctx.shadowOffsetY = 8;
+  ctx.roundRect(rightCardX, bottomY, rightCardW, rightCardH, 32);
+  ctx.fill();
+  ctx.restore();
 
-  // right text panel slightly tinted for better contrast
-  ctx.fillStyle = '#eef4ff';
-  ctx.fillRect(panelX + panelW + 16, panelY, panelW, panelH);
-  ctx.strokeStyle = '#d1dbea';
-  ctx.lineWidth = 1.8;
-  ctx.strokeRect(panelX + panelW + 16, panelY, panelW, panelH);
+  // remove right bottom card border
+  ctx.strokeStyle = 'rgba(0,0,0,0)';
+  ctx.lineWidth = 0;
+  // ctx.roundRect(rightCardX, bottomY, rightCardW, rightCardH, 32); ctx.stroke();
 
   // no 'Mensaje de apoyo' text as requested
 }
 
 function drawImageCrop(img) {
-  // image area sits inside the left panel with consistent padding
+  // image area sits inside the left bottom card with consistent padding
   const panelX = 60;
-  const headerY = 24;
-  const headerH = 420;
-  const panelY = headerY + headerH + 12;
-  const pad = 16;
+  const panelY = 540; // aligned with bottomY from template
+  const pad = 20;
   const x = panelX + pad;
   const y = panelY + pad;
-  const w = 440 - pad * 2;
-  const h = 560 - pad * 2;
+  const w = 480 - pad * 2;
+  const h = 480 - pad * 2;
 
   if (!img) {
     drawPlaceholderImage(x, y, w, h);
     return;
   }
   // draw framed photo with shadow and cover-fit crop for a more attractive look
-  const framePad = 10;
+  const framePad = 12;
   ctx.save();
   // outer shadowed frame
   ctx.shadowColor = 'rgba(0,0,0,0.18)';
@@ -299,39 +333,43 @@ function drawJustifiedText(text, maxWidth, lineHeight, startX, startY, maxHeight
 }
 
 function drawText(header, message) {
-  const panelX = 60;
-  const panelW = 440;
-  const panelH = 560;
-  const headerY = 24;
-  const headerH = 420;
-  const panelY = headerY + headerH + 12;
-  const textX = panelX + panelW + 36; // right panel inner start
+  const panelX = 560; // right card X (left 60 + leftCardW 480 + 20 gap)
+  const panelW = 480;
+  const panelH = 480;
+  const panelY = 540;
+  const textX = panelX + 36; // right panel inner start
   const textWidth = panelW - 56;
-  const startY = panelY + 48;
+  const startY = panelY + 44;
 
-  ctx.fillStyle = '#003d7a';
-  ctx.font = '700 32px Inter, sans-serif';
+  // split header into label and name/origin
+  const fullHeader = header || '';
+  const namePart = fullHeader.replace(/^Me llamo\s*/i, '').replace(/\.+$/, '');
+
+  // label and name same size, name in blue
   ctx.textAlign = 'left';
-  const headerEndY = wrapText(header, textWidth, 42, textX, startY);
+  ctx.font = '800 34px Inter, sans-serif';
+  ctx.fillStyle = '#0f172a';
+  ctx.fillText('Me llamo', textX, startY);
 
-  ctx.fillStyle = '#1d2b4b';
+  ctx.fillStyle = '#1d4ed8';
+  const nameStartY = startY + 38;
+  const nameEndY = wrapText(namePart, textWidth, 40, textX, nameStartY);
+
+  ctx.fillStyle = '#24346f';
   ctx.font = '500 26px Inter, sans-serif';
-  const bodyY = headerEndY + 18;
-  const voiceY = panelY + panelH - 90;
+  const bodyY = nameEndY + 14;
+  const voiceY = panelY + panelH - 96;
   const availableBodyHeight = voiceY - bodyY - 8;
-  drawJustifiedText(message, textWidth, 38, textX, bodyY, availableBodyHeight);
+  drawJustifiedText(message, textWidth, 34, textX, bodyY, availableBodyHeight);
 
-  ctx.fillStyle = '#003d7a';
-  ctx.font = '600 24px Inter, sans-serif';
-  ctx.fillText('Mi voz cuenta', textX, voiceY);
-
-  // fixed hashtags at the bottom of the right panel
-  const hashtagX = panelX + panelW + 16 + panelW / 2;
+  // fixed hashtags at the bottom of the right panel (larger)
+  const hashtagX = panelX + panelW / 2;
   ctx.textAlign = 'center';
-  ctx.fillStyle = '#f7b600';
-  ctx.font = '700 22px Inter, sans-serif';
-  ctx.fillText('#MeLaJuegoPorLaVida', hashtagX, panelY + panelH - 44);
-  ctx.fillText('#IvanCepedaPresidente', hashtagX, panelY + panelH - 18);
+  ctx.fillStyle = '#1d4ed8';
+  ctx.font = '800 26px Inter, sans-serif';
+  ctx.fillText('#MeLaJuegoPorLaVida', hashtagX, panelY + panelH - 60);
+  ctx.fillStyle = '#f97316';
+  ctx.fillText('#IvanCepedaPresidente', hashtagX, panelY + panelH - 28);
   ctx.textAlign = 'left';
 }
 
