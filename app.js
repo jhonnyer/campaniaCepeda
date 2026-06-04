@@ -18,10 +18,13 @@ const cameraStream = document.getElementById('cameraStream');
 const captureBtn = document.getElementById('captureBtn');
 const cancelCaptureBtn = document.getElementById('cancelCaptureBtn');
 const captureWrapper = document.getElementById('captureWrapper');
+const causePreview = document.getElementById('causePreview');
 let uploadedImage = null;
 let deferredPrompt = null;
 let cameraStreamObj = null;
 const FIXED_HASHTAG = '#MiVozCuenta';
+let causeMessages = {};
+let causeDefinitions = [];
 // fixed header logo (use cepeda.jpg placed at project root)
 let campaignLogo = new Image();
 campaignLogo.src = 'img/cepeda.jpg';
@@ -37,18 +40,6 @@ const defaultMessages = [
   'Sueño con una Colombia donde nuestras diferencias no nos dividan y donde todos tengamos oportunidades para construir un mejor futuro. Por eso apoyo a Iván Cepeda.',
   'Creo que es posible construir un país más justo, más humano y con oportunidades para todos. Por eso apoyo a Iván Cepeda.'
 ];
-
-const causeMessages = {
-  Paz: 'Creo en una Colombia donde la violencia no determine el futuro de nuestras comunidades y donde la paz sea una realidad para todos. Por eso apoyo a Iván Cepeda.',
-  Educación: 'Creo que la educación debe abrir oportunidades para todos los jóvenes del país. Por eso apoyo a Iván Cepeda.',
-  Salud: 'Creo que la salud debe ser un derecho garantizado para todos los colombianos. Por eso apoyo a Iván Cepeda.',
-  Juventud: 'Creo en una Colombia donde los jóvenes tengan más oportunidades y puedan construir sus proyectos de vida. Por eso apoyo a Iván Cepeda.',
-  Campo: 'Creo en un país que valore el campo, apoye a los campesinos y fortalezca el desarrollo rural. Por eso apoyo a Iván Cepeda.',
-  Empleo: 'Creo en una Colombia con empleo digno y oportunidades para todos. Por eso apoyo a Iván Cepeda.',
-  'Derechos Humanos': 'Creo en una Colombia donde la dignidad humana y los derechos de todos sean respetados. Por eso apoyo a Iván Cepeda.',
-  'Justicia Social': 'Creo en una Colombia más justa e incluyente, donde nadie quede atrás. Por eso apoyo a Iván Cepeda.',
-  'Medio Ambiente': 'Creo en una Colombia que proteja su riqueza natural y garantice un futuro sostenible para las próximas generaciones. Por eso apoyo a Iván Cepeda.'
-};
 
 function setStatus(text, isError = false) {
   status.textContent = text;
@@ -76,6 +67,61 @@ function getMessageText(message, cause) {
     return causeMessages[cause];
   }
   return defaultMessages[Math.floor(Math.random() * defaultMessages.length)];
+}
+
+function populateCauseSelect() {
+  if (!causeInput) return;
+  const currentValue = causeInput.value;
+  const options = ['<option value="">Ninguna</option>'];
+  causeDefinitions.forEach((item) => {
+    const selected = item.value === currentValue ? ' selected' : '';
+    options.push(`<option value="${item.value}"${selected}>${item.label}</option>`);
+  });
+  causeInput.innerHTML = options.join('');
+}
+
+function updateCausePreview(cause) {
+  if (!causePreview) return;
+  if (cause && causeMessages[cause]) {
+    causePreview.textContent = `Sugerencia: ${causeMessages[cause]}`;
+  } else {
+    causePreview.textContent = 'Selecciona una causa para ver un mensaje sugerido más llamativo.';
+  }
+}
+
+function isCauseMessage(text) {
+  if (!text) return false;
+  return Object.values(causeMessages).some((msg) => msg === text.trim());
+}
+
+async function loadCauseDefinitions() {
+  try {
+    const response = await fetch('causes.json');
+    if (!response.ok) throw new Error('No se pudo cargar causes.json');
+    const data = await response.json();
+    causeDefinitions = Array.isArray(data.causes) ? data.causes : [];
+  } catch (error) {
+    console.warn('No se pudo cargar causes.json, usando textos internos.', error);
+    causeDefinitions = [
+      { value: 'Paz', label: 'Paz', message: '¡Quiero una Colombia en paz, sin violencia ni miedo, donde la esperanza sea para todos! Apoyo a Iván Cepeda.' },
+      { value: 'Educación', label: 'Educación', message: 'La educación debe abrir puertas y transformar vidas. Apoyo a Iván Cepeda para que esto sea una realidad en todo el país.' },
+      { value: 'Salud', label: 'Salud', message: 'La salud es un derecho, no un privilegio. Apoyo a Iván Cepeda para que la atención llegue a todas las familias.' },
+      { value: 'Juventud', label: 'Juventud', message: 'Los jóvenes somos el futuro y merecemos oportunidades reales para estudiar, trabajar y soñar. Apoyo a Iván Cepeda.' },
+      { value: 'Campo', label: 'Campo', message: 'El campo necesita inversión, respeto y justicia. Apoyo a quienes trabajan por una Colombia rural más fuerte.' },
+      { value: 'Empleo', label: 'Empleo', message: 'Trabajo digno y oportunidades para todos. Apoyo a Iván Cepeda para que el empleo sea una realidad con derechos.' },
+      { value: 'Derechos Humanos', label: 'Derechos Humanos', message: 'La dignidad y los derechos humanos deben protegerse en cada territorio. Apoyo a Iván Cepeda para defender la vida.' },
+      { value: 'Justicia Social', label: 'Justicia Social', message: 'La justicia social es urgente y no puede esperar. Quiero un país más equitativo para todas y todos.' },
+      { value: 'Medio Ambiente', label: 'Medio Ambiente', message: 'Cuidar la naturaleza es cuidar nuestro futuro. Apoyo políticas que protejan ríos, bosques y comunidades.' }
+    ];
+  }
+
+  causeMessages = causeDefinitions.reduce((acc, item) => {
+    acc[item.value] = item.message;
+    return acc;
+  }, {});
+
+  populateCauseSelect();
+  updateCausePreview(causeInput.value);
 }
 
 function drawBackground() {
@@ -564,10 +610,13 @@ originInput.addEventListener('input', () => generatePoster());
 causeInput.addEventListener('change', () => {
   setStatus('Actualizando vista previa según causa seleccionada...', false);
   const cause = causeInput.value;
-  // If user has not entered a custom message, populate it with the cause message
-  if (!messageInput.value.trim() && cause && causeMessages[cause]) {
-    messageInput.value = causeMessages[cause];
+  const currentText = messageInput.value.trim();
+  if (cause && causeMessages[cause]) {
+    if (!currentText || isCauseMessage(currentText)) {
+      messageInput.value = causeMessages[cause];
+    }
   }
+  updateCausePreview(cause);
   generatePoster();
 });
 messageInput.addEventListener('input', () => generatePoster());
@@ -708,4 +757,10 @@ if ('serviceWorker' in navigator) {
   });
 }
 
-setStatus('Carga una foto y completa los campos para ver la vista previa.');
+loadCauseDefinitions().then(() => {
+  setStatus('Carga una foto y completa los campos para ver la vista previa.');
+  generatePoster();
+}).catch(() => {
+  setStatus('Carga una foto y completa los campos para ver la vista previa.');
+  generatePoster();
+});

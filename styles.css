@@ -121,7 +121,19 @@ textarea {
 
 input::placeholder,
 textarea::placeholder,
+select::placeholder {
   color: #9ca3af;
+}
+
+.cause-preview {
+  margin-top: 10px;
+  padding: 14px 16px;
+  border-radius: 16px;
+  background: #eff6ff;
+  color: #0f1724;
+  font-size: 0.96rem;
+  line-height: 1.6;
+  border: 1px solid #dbeafe;
 }
 
 /* ensure select control text is visible across browsers */

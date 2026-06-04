@@ -1,0 +1,49 @@
+{
+  "causes": [
+    {
+      "value": "Paz",
+      "label": "Paz",
+      "message": "¡Quiero una Colombia en paz, sin violencia ni miedo, donde la esperanza sea para todos! Apoyo a Iván Cepeda."
+    },
+    {
+      "value": "Educación",
+      "label": "Educación",
+      "message": "La educación debe abrir puertas y transformar vidas. Apoyo a Iván Cepeda para que esto sea una realidad en todo el país."
+    },
+    {
+      "value": "Salud",
+      "label": "Salud",
+      "message": "La salud es un derecho, no un privilegio. Apoyo a Iván Cepeda para que la atención llegue a todas las familias."
+    },
+    {
+      "value": "Juventud",
+      "label": "Juventud",
+      "message": "Los jóvenes somos el futuro y merecemos oportunidades reales para estudiar, trabajar y soñar. Apoyo a Iván Cepeda."
+    },
+    {
+      "value": "Campo",
+      "label": "Campo",
+      "message": "El campo necesita inversión, respeto y justicia. Apoyo a quienes trabajan por una Colombia rural más fuerte."
+    },
+    {
+      "value": "Empleo",
+      "label": "Empleo",
+      "message": "Trabajo digno y oportunidades para todos. Apoyo a Iván Cepeda para que el empleo sea una realidad con derechos."
+    },
+    {
+      "value": "Derechos Humanos",
+      "label": "Derechos Humanos",
+      "message": "La dignidad y los derechos humanos deben protegerse en cada territorio. Apoyo a Iván Cepeda para defender la vida."
+    },
+    {
+      "value": "Justicia Social",
+      "label": "Justicia Social",
+      "message": "La justicia social es urgente y no puede esperar. Quiero un país más equitativo para todas y todos."
+    },
+    {
+      "value": "Medio Ambiente",
+      "label": "Medio Ambiente",
+      "message": "Cuidar la naturaleza es cuidar nuestro futuro. Apoyo políticas que protejan ríos, bosques y comunidades."
+    }
+  ]
+}
